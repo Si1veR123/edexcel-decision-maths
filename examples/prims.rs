@@ -18,6 +18,10 @@ fn main() {
           \     /              \   |
             D ======== 14 ======== E
 
+    A: 0,
+    B: 1,
+    ...
+
     */
 
     // add bidirectional weighted arcs

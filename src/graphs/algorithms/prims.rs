@@ -31,13 +31,11 @@ impl Prims {
         let new_graph_start_node = create_empty_node_from_node(start_node.clone());
         Self { visited: vec![(start_node, new_graph_start_node)], target_nodes: nodes_count}
     }
-    pub fn run(mut self) -> Vec<Rc<RefCell<Node>>> {
-        while !self.step() {};
-        self.visited.into_iter().map(|(_, x)| x).collect()
-    }
 }
 
 impl SteppedAlgorithm for Prims {
+    type ReturnType = Vec<Rc<RefCell<Node>>>;
+
     fn step(&mut self) -> bool {
         if self.visited.len() == self.target_nodes {
             return true
@@ -45,7 +43,7 @@ impl SteppedAlgorithm for Prims {
 
         // ( (from original, from representation), to, weight)
         let mut minimum_edge: (Option<MappingNode>, Option<Rc<RefCell<Node>>>, f64) = (None, None, f64::INFINITY);
-        for node in self.visited.iter() {
+        for node in &self.visited {
             for edge in node.0.borrow().out_edges() {
                 if 
                     (edge.1 < minimum_edge.2) &
@@ -73,5 +71,10 @@ impl SteppedAlgorithm for Prims {
         self.visited.push((original_node_to, new_representation_node_to));
         
         false
+    }
+
+    fn run(mut self) -> Vec<Rc<RefCell<Node>>> {
+        while !self.step() {};
+        self.visited.into_iter().map(|(_, x)| x).collect()
     }
 }
