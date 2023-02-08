@@ -61,7 +61,7 @@ impl Display for Node {
 
 impl Debug for Node {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.details(f)
+        write!(f, "Node {}", display_id(self.id))
     }
 }
 
@@ -91,14 +91,13 @@ impl Node {
         &self.edges
     }
 
-    pub fn edge_type_to(&self, other_node: Rc<RefCell<Node>>) -> Option<EdgeType> {
+    pub fn edge_type_to(&self, other_node: Rc<RefCell<Node>>) -> Option<(EdgeType, f64)> {
         // if weighted, edge weight from self -> other_node > 0
         // if directed, there is no returning edge from other node
 
-        let i = self.edges.iter().position(|x| std::ptr::eq(x.0.as_ptr(), other_node.as_ptr()));
-        if i.is_none() { return None }
+        let i = self.edges.iter().position(|x| std::ptr::eq(x.0.as_ptr(), other_node.as_ptr()))?;
 
-        let edge = self.edges.get(i.unwrap()).unwrap();
+        let edge = self.edges.get(i).unwrap();
         let is_weighted = edge.1 > 0.0;
 
         let is_directed = {
@@ -107,11 +106,11 @@ impl Node {
             j.is_none()
         };
 
-        match (is_directed, is_weighted) {
-            (true, true) => Some(EdgeType::DirectedWeighted),
-            (true, false) => Some(EdgeType::DirectedUnweighted),
-            (false, true) => Some(EdgeType::UndirectedWeighted),
-            (false, false) => Some(EdgeType::UndirectedUnweighted)
-        }
+        Some((match (is_directed, is_weighted) {
+            (true, true) => EdgeType::DirectedWeighted,
+            (true, false) => EdgeType::DirectedUnweighted,
+            (false, true) => EdgeType::UndirectedWeighted,
+            (false, false) => EdgeType::UndirectedUnweighted
+        }, edge.1))
     }
 }
